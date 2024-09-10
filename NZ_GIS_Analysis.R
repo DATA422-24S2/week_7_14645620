@@ -92,3 +92,8 @@ nz_ta <- st_read(geojson_path)
 
 # Display the structure of the sf object to understand its contents
 print(nz_ta)
+
+# Create a black and white plot of the NZ territories
+ggplot(data = nz_ta) + 
+  geom_sf(fill = "white", color = "black") +  # Fill regions with white and borders with black
+  theme_void()  # Remove axes, labels, and background
