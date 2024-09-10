@@ -41,3 +41,24 @@ nz_heatmap <- leaflet(nz_pop) %>%
 # Display the heatmap
 nz_heatmap
 
+# Print column names to verify
+print(names(nz_geo))
+print(names(nz_population))
+
+# Rename columns in the population data to match the geospatial data
+nz_population <- nz_population %>%
+  rename(TA2016 = TA2016, population = population) # Adjust these names if needed
+
+# Merge the geospatial and population data
+nz_geo <- nz_geo %>%
+  left_join(nz_population, by = "TA2016")
+
+# Basic choropleth map
+nz_choropleth <- ggplot(nz_geo) +
+  geom_sf(aes(fill = population), color = "white") +
+  theme_void() +
+  labs(title = "Population Distribution in New Zealand Territories", fill = "Population") +
+  scale_fill_viridis_c(option = "plasma")  # Optional: use a color scale from the viridis package
+
+# Display the choropleth map
+print(nz_choropleth)
