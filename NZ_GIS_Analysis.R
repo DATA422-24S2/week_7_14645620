@@ -86,3 +86,9 @@ choropleth_map <- leaflet(data = nz_data) %>%
 
 # Display the choropleth map
 print(choropleth_map)
+
+# Read the geoJSON file into an sf object
+nz_ta <- st_read(geojson_path)
+
+# Display the structure of the sf object to understand its contents
+print(nz_ta)
