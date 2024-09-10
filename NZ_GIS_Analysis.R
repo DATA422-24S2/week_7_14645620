@@ -132,3 +132,23 @@ choropleth_map <- leaflet(data = nz_data) %>%
 # Display the map
 print(choropleth_map)
 
+# Rename columns for consistency and clarity (although here we are renaming to the same names)
+pop_data_clean <- pop_data %>%
+  rename(
+    TA2016_NAM = "TA2016_NAM",  # Keeping the column name TA2016_NAM unchanged
+    population = "population",  # Keeping the column name population unchanged
+    population_change_number = "population_change_number",  # Keeping the column name population_change_number unchanged
+    population_change_percent = "population_change_percent"  # Keeping the column name population_change_percent unchanged
+  )
+
+# Remove rows with missing population data to clean the dataset
+pop_data_clean <- pop_data_clean %>%
+  filter(!is.na(population))  # Ensures there are no missing population values
+
+# Create a histogram to visualize the distribution of the population across territories
+hist(pop_data_clean$population, 
+     main = "Population Distribution",  # Title of the histogram
+     xlab = "Population",  # Label for the x-axis
+     col = "lightblue",  # Color of the bars
+     border = "black")  # Color of the border of the bars
+
