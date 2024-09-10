@@ -66,6 +66,7 @@ print(head(nz_data))
 
 # Define a color palette for the choropleth map, using 'viridis' color scheme and population as the domain
 pal <- colorNumeric(palette = "viridis", domain = nz_data$population)
+
 # Create the choropleth map
 choropleth_map <- leaflet(data = nz_data) %>%
   addProviderTiles(providers$OpenStreetMap) %>%  # Add base map layer
@@ -97,3 +98,37 @@ print(nz_ta)
 ggplot(data = nz_ta) + 
   geom_sf(fill = "white", color = "black") +  # Fill regions with white and borders with black
   theme_void()  # Remove axes, labels, and background
+
+# Print summary statistics to check the distribution
+summary(pop_data$population)
+
+# Create a histogram of the population distribution
+hist(pop_data$population, main = "Population Distribution", xlab = "Population", col = "lightblue", border = "black")
+
+# Add a log-transformed population column
+nz_data$log_population <- log1p(nz_data$population)
+
+# Define a color palette with log scale
+pal <- colorNumeric(palette = "viridis", domain = nz_data$log_population)
+
+# Create the choropleth map with log scale
+choropleth_map <- leaflet(data = nz_data) %>%
+  addProviderTiles(providers$OpenStreetMap) %>%
+  addPolygons(
+    fillColor = ~pal(log1p(population)),  # Use log-transformed population for color
+    fillOpacity = 0.7,
+    color = "#BDBDC3",
+    weight = 1,
+    popup = ~paste(TA2016_NAM, "<br>Population:", population)
+  ) %>%
+  addLegend(
+    pal = pal, 
+    values = ~log1p(population),
+    title = "Population (log scale)",
+    position = "bottomright"
+  ) %>%
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5)
+
+# Display the map
+print(choropleth_map)
+
