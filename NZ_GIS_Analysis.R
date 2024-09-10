@@ -31,3 +31,13 @@ nz_map_pop <- leaflet(nz_pop) %>%
 
 # Display the map with markers
 nz_map_pop
+
+# Create a heatmap based on population density
+nz_heatmap <- leaflet(nz_pop) %>%
+  addTiles() %>%
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5) %>%
+  addHeatmap(lng = ~lng, lat = ~lat, intensity = ~population, blur = 20, max = 0.5)
+
+# Display the heatmap
+nz_heatmap
+
