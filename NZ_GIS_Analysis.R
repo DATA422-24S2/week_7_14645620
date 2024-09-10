@@ -7,6 +7,7 @@ library(leaflet.extras)
 library(plotly)
 library(viridis)
 library(leaflet)
+library(scales)
 
 # Create a basic map centered on New Zealand
 nz_map <- leaflet() %>%
@@ -171,3 +172,26 @@ ggplot(data = nz_data_merged) +
        caption = "Source: Data201/422 Course") +
   theme_void() +  # Remove background elements
   theme(legend.position = "right")  # Position the legend on the right
+
+# Create the enhanced choropleth map
+ggplot(data = nz_data_merged) +
+  geom_sf(aes(fill = population), color = "white") +  # Fill polygons based on population count
+  scale_fill_viridis_c(option = "magma", trans = 'log', name = "Population", 
+                       breaks = trans_breaks("log10", function(x) 10^x),
+                       labels = trans_format("log10", math_format(10^.x))) +  # Log scale for better visualization
+  labs(title = "Choropleth Map of New Zealand Territories",
+       subtitle = "Population Distribution by Territory",
+       caption = "Source: Data201/422 Course") +
+  theme_void() +  # Remove background elements
+  theme(
+    legend.position = "right",  # Position the legend on the right
+    plot.title = element_text(size = 16, face = "bold"),  # Title styling
+    plot.subtitle = element_text(size = 14),  # Subtitle styling
+    plot.caption = element_text(size = 10, face = "italic"),  # Caption styling
+    panel.background = element_rect(fill = "lightgray"),  # Change background color
+    legend.title = element_text(size = 12),  # Legend title styling
+    legend.text = element_text(size = 10)  # Legend text styling
+  )
+
+# Save the plot as a PNG file
+ggsave("choropleth_map_nz.png", width = 10, height = 8, dpi = 300)
