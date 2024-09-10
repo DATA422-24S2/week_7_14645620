@@ -152,3 +152,13 @@ hist(pop_data_clean$population,
      col = "lightblue",  # Color of the bars
      border = "black")  # Color of the border of the bars
 
+
+
+# Merge geospatial data (nz_ta) with numeric data (pop_data_clean)
+# The left_join ensures that all regions from nz_ta are included, even if there's no matching population data
+nz_data_merged <- nz_ta %>%
+  left_join(pop_data_clean, by = "TA2016_NAM")  # Join on the TA2016_NAM column which is common in both datasets
+
+# Check the first few rows of the merged data to verify the join
+head(nz_data_merged)
+
