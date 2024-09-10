@@ -162,3 +162,12 @@ nz_data_merged <- nz_ta %>%
 # Check the first few rows of the merged data to verify the join
 head(nz_data_merged)
 
+# Create the choropleth map
+ggplot(data = nz_data_merged) +
+  geom_sf(aes(fill = population), color = "white") +  # Fill polygons based on population count
+  scale_fill_viridis_c(option = "viridis", name = "Population") +  # Color scale for better visualization
+  labs(title = "Choropleth Map of New Zealand Territories",
+       subtitle = "Population Distribution by Territory",
+       caption = "Source: Data201/422 Course") +
+  theme_void() +  # Remove background elements
+  theme(legend.position = "right")  # Position the legend on the right
