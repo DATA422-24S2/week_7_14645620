@@ -1,3 +1,4 @@
+# Load necessary libraries
 library(leaflet)
 library(sf)
 library(ggplot2)
@@ -9,13 +10,13 @@ library(leaflet)
 
 # Create a basic map centered on New Zealand
 nz_map <- leaflet() %>%
-  addTiles() %>%
-  setView(lng = 174.885971, lat = -40.900557, zoom = 5)  # Adjust the zoom as needed
+  addTiles() %>%  # Add default OpenStreetMap tiles
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5)  # Center the map on New Zealand with a specified zoom level
 
-# Display the map
+# Display the basic map
 nz_map
 
-# Create a dataset for major New Zealand cities
+# Create a dataset for major New Zealand cities with their population
 nz_pop <- data.frame(
   city = c("Auckland", "Wellington", "Christchurch"),
   lat = c(-36.8485, -41.2865, -43.5321),
@@ -23,42 +24,65 @@ nz_pop <- data.frame(
   population = c(1628900, 215100, 381800)
 )
 
-# Create a map with markers
+# Create a map with markers for major cities
 nz_map_pop <- leaflet(nz_pop) %>%
-  addTiles() %>%
-  setView(lng = 174.885971, lat = -40.900557, zoom = 5) %>%
-  addMarkers(~lng, ~lat, popup = ~paste(city, "<br>Population:", population))
+  addTiles() %>%  # Add default OpenStreetMap tiles
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5) %>%  # Center the map on New Zealand
+  addMarkers(~lng, ~lat, popup = ~paste(city, "<br>Population:", population))  # Add markers with popup information
 
 # Display the map with markers
 nz_map_pop
 
-# Create a heatmap based on population density
+# Create a heatmap based on population density of the cities
 nz_heatmap <- leaflet(nz_pop) %>%
-  addTiles() %>%
-  setView(lng = 174.885971, lat = -40.900557, zoom = 5) %>%
-  addHeatmap(lng = ~lng, lat = ~lat, intensity = ~population, blur = 20, max = 0.5)
+  addTiles() %>%  # Add default OpenStreetMap tiles
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5) %>%  # Center the map on New Zealand
+  addHeatmap(lng = ~lng, lat = ~lat, intensity = ~population, blur = 20, max = 0.5)  # Add heatmap layer
 
 # Display the heatmap
 nz_heatmap
 
-# Print column names to verify
-print(names(nz_geo))
-print(names(nz_population))
+# Load the geoJSON file containing territorial boundaries for New Zealand
+nz_ta <- st_read("/Volumes/arjun/DATA201/week_7/nz_ta.geojson")
 
-# Rename columns in the population data to match the geospatial data
-nz_population <- nz_population %>%
-  rename(TA2016 = TA2016, population = population) # Adjust these names if needed
+# Load the CSV file containing population data
+pop_data <- read.csv("/Volumes/arjun/DATA201/week_7/nz_territory_2016_population.csv")
 
-# Merge the geospatial and population data
-nz_geo <- nz_geo %>%
-  left_join(nz_population, by = "TA2016")
+# Rename columns in the population data to match those in the geoJSON file
+pop_data <- pop_data %>%
+  rename(
+    TA2016_NAM = "nz_territory",  # Rename 'nz_territory' to 'TA2016_NAM' to match geoJSON column
+    population = "X2016_population",  # Rename 'X2016_population' to 'population'
+    population_change_number = "X2016_population_change_number",  # Rename 'X2016_population_change_number'
+    population_change_percent = "X2016_population_change_percent"  # Rename 'X2016_population_change_percent'
+  )
 
-# Basic choropleth map
-nz_choropleth <- ggplot(nz_geo) +
-  geom_sf(aes(fill = population), color = "white") +
-  theme_void() +
-  labs(title = "Population Distribution in New Zealand Territories", fill = "Population") +
-  scale_fill_viridis_c(option = "plasma")  # Optional: use a color scale from the viridis package
+# Merge the spatial data with the population data on the 'TA2016_NAM' column
+nz_data <- nz_ta %>%
+  left_join(pop_data, by = "TA2016_NAM")  # Merge based on the territorial name
+
+# View the result of the merge to ensure proper integration of data
+print(head(nz_data))
+
+# Define a color palette for the choropleth map, using 'viridis' color scheme and population as the domain
+pal <- colorNumeric(palette = "viridis", domain = nz_data$population)
+# Create the choropleth map
+choropleth_map <- leaflet(data = nz_data) %>%
+  addProviderTiles(providers$OpenStreetMap) %>%  # Add base map layer
+  addPolygons(
+    fillColor = ~pal(population),  # Set polygon colors based on population data
+    fillOpacity = 0.7,             # Set the opacity of the fill color
+    color = "#BDBDC3",             # Border color of polygons
+    weight = 1,                    # Border weight
+    popup = ~paste(TA2016_NAM, "<br>Population:", population)  # Popup with region name and population
+  ) %>%
+  addLegend(
+    pal = pal,                     # Add a legend to the map
+    values = ~population,         # Values to use for color scale
+    title = "Population",         # Title of the legend
+    position = "bottomright"       # Position of the legend on the map
+  ) %>%
+  setView(lng = 174.885971, lat = -40.900557, zoom = 5)  # Set initial view of the map
 
 # Display the choropleth map
-print(nz_choropleth)
+print(choropleth_map)
